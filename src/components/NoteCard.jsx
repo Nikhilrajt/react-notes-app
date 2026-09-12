@@ -1,4 +1,4 @@
-function NoteCard({note,onEdit}){
+function NoteCard({note,onEdit,onDelete,onArchive}){
     const colorClasses = {
   yellow: "bg-yellow-100",
   blue: "bg-blue-100",
@@ -23,13 +23,21 @@ return (
     </span>
   ))}
 </div>
-
+    <p className="mt-3 text-xs text-gray-500">
+  Created: {note.createdAt}
+</p>
     <p className="mt-3 text-xs text-gray-500">
       Updated: {note.updatedAt}
     </p>
     <button
     onClick={()=>onEdit(note)}
     className="mt-3 px-3 py-1 border rounded">Edit</button>
+    <button onClick={()=>onDelete(note.id)}
+      className="mt-3 px-3 py-1 border rounded">Delete</button>
+      <button onClick={()=>onArchive(note.id)}
+      className="mt-3 px-3 py-1 border rounded"
+      >
+      {note.archived ? "Unarchive":"Archive"}</button>
   </div>
 );
 }

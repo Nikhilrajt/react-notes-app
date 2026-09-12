@@ -1,24 +1,31 @@
-import {useState} from "react";
+import {useState,useEffect} from "react";
 import NoteCard from "./components/NoteCard";
 function App() {
-  const [notes,setNotes] = useState([
+ const [notes, setNotes] = useState(() => {
+  const savedNotes = localStorage.getItem("notes");
+  return savedNotes ? JSON.parse(savedNotes) : [
     {
-      id:1,
+      id: 1,
       title: "React Learning",
       content: "Today I learned about useEffect and useState.",
       color: "yellow",
-      tags: ["React","Learning"],
-    updatedAt: "Sep 11, 2026"
+      tags: ["React", "Learning"],
+      archived: false,
+      createdAt: "Sep 11, 2026",
+      updatedAt: "Sep 11, 2026"
     },
     {
-    id: 2,
-    title: "Shopping List",
-    content: "Milk, bread and vegetables.",
-    color: "blue",
-    tags: ["Personal"],
-    updatedAt: "Sep 11, 2026"
-  }
-  ]);
+      id: 2,
+      title: "Shopping List",
+      content: "Milk, bread and vegetables.",
+      color: "blue",
+      tags: ["Personal"],
+      archived: false,
+      createdAt: "Sep 11, 2026",
+      updatedAt: "Sep 11, 2026"
+    }
+  ];
+});
   const [newNote,setNewnote] = useState({
     title: "",
     content:"",
@@ -27,6 +34,10 @@ function App() {
   });
   const  [editingId,setEditingId] = useState(null);
   const [tagInput, setTagInput] = useState("");
+  const [showArchived,setShowArchived] = useState(false);
+  useEffect(() => {
+  localStorage.setItem("notes", JSON.stringify(notes));
+}, [notes]);
   function handleAddNote(){
     if(newNote.content.trim()===""){
        alert("Content is required");
@@ -38,6 +49,7 @@ function App() {
     }
     const duplicate = notes.some(
       (note)=>
+         note.id !== editingId &&
         note.title.trim() === newNote.title.trim() &&
       note.content.trim() === newNote.content.trim()
     );
@@ -49,10 +61,14 @@ function App() {
       alert("Content cannot exceed 1000 characters");
       return;
     }
-    if(newNote.tags.some((tag)=>tag.length > 30)){
-      alert("Each tag cannot exceed 30 characters");
-      return;
-    }
+if (
+  tagInput
+    .split(",")
+    .some((tag) => tag.trim().length > 30)
+) {
+  alert("Each tag cannot exceed 30 characters");
+  return;
+}
 const note = {
   ...newNote,
 
@@ -60,11 +76,12 @@ const note = {
     .split(",")
     .map((tag) => tag.trim())
     .filter((tag) => tag !== ""),
+
   id: Date.now(),
   createdAt: new Date().toLocaleDateString(),
-  updatedAt: new Date().toLocaleDateString()
+  updatedAt: new Date().toLocaleDateString(),
+  archived: false
 };
-setTagInput("")
     if (editingId !== null) {
   setNotes(
     notes.map((existingNote) =>
@@ -94,6 +111,25 @@ setTagInput("")
   setNewnote(note);
   setTagInput(note.tags.join(","));
 }
+ function handleDelete(id){
+  const confirmDelete = window.confirm("Are you sure want to delete this note?");
+  if(!confirmDelete){
+    return;
+  }
+  setNotes(notes.filter((note)=>note.id !== id));
+ }
+ function handleArchive(id){
+  setNotes(
+    notes.map((note)=>
+    note.id === id
+    ? {...note,archived: !note.archived}
+    : note
+  )
+  )
+}
+  const visibleNotes = notes.filter((note)=>
+   showArchived ? note.archived : !note.archived);
+ 
   return (
     <div className = "min-h-screen p-6">
     <h1 className="text-3xl font-bold">Notes</h1>
@@ -106,6 +142,12 @@ setTagInput("")
      <button onClick={handleAddNote} className="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">
       Add Note</button>
     </div>
+    <button 
+  onClick={() => setShowArchived(!showArchived)} 
+  className="mt-4 px-4 py-2 border rounded"
+>
+  {showArchived ? "Active Notes" : "Archived Notes"}
+</button>
     <div className="mt-6 border rounded-lg p-4">
   <input
     placeholder="Title"
@@ -159,11 +201,13 @@ setTagInput("")
   </input>
 </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-      {notes.map((note) => (
+      {visibleNotes.map((note) => (
   <NoteCard
    key={note.id} 
    note={note} 
-   onEdit={handleEdit}/>
+   onEdit={handleEdit}
+   onDelete={handleDelete}
+   onArchive={handleArchive}/>
 ))}
 
     </div>
