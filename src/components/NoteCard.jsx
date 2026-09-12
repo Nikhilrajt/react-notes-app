@@ -1,9 +1,10 @@
-function NoteCard({note}){
+function NoteCard({note,onEdit}){
     const colorClasses = {
   yellow: "bg-yellow-100",
   blue: "bg-blue-100",
   green: "bg-green-100",
   pink: "bg-pink-100",
+  red: "bg-red-100"
 };
 return (
   <div className={`${colorClasses[note.color]} p-4 rounded-lg shadow`}>
@@ -26,6 +27,9 @@ return (
     <p className="mt-3 text-xs text-gray-500">
       Updated: {note.updatedAt}
     </p>
+    <button
+    onClick={()=>onEdit(note)}
+    className="mt-3 px-3 py-1 border rounded">Edit</button>
   </div>
 );
 }
