@@ -1,4 +1,4 @@
-function NoteCard({ note, onEdit, onDelete, onArchive }) {
+function NoteCard({ note, onEdit, onDelete, onArchive, onPin, selected, onSelect }) {
   const colorClasses = {
     yellow: "bg-yellow-100",
     blue: "bg-blue-100",
@@ -8,6 +8,11 @@ function NoteCard({ note, onEdit, onDelete, onArchive }) {
   };
   return (
     <div className={`${colorClasses[note.color]} p-4 rounded-lg shadow`}>
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={() => onSelect(note.id)}
+      />
       <h2 className="text-xl font-semibold">{note.title}</h2>
 
       <p className="mt-2 text-gray-700">
@@ -38,6 +43,12 @@ function NoteCard({ note, onEdit, onDelete, onArchive }) {
         className="mt-3 px-3 py-1 border rounded"
       >
         {note.archived ? "Unarchive" : "Archive"}</button>
+      <button
+        onClick={() => onPin(note.id)}
+        className="mt-3 px-3 py-1 border rounded"
+      >
+        {note.pinned ? "Unpin" : "Pin"}
+      </button>
     </div>
   );
 }

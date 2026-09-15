@@ -9,6 +9,7 @@ function App() {
         title: "React Learning",
         content: "Today I learned about useEffect and useState.",
         color: "yellow",
+        pinned: false,
         tags: ["React", "Learning"],
         archived: false,
         createdAt: "Sep 11, 2026",
@@ -19,6 +20,7 @@ function App() {
         title: "Shopping List",
         content: "Milk, bread and vegetables.",
         color: "blue",
+        pinned: false,
         tags: ["Personal"],
         archived: false,
         createdAt: "Sep 11, 2026",
@@ -39,6 +41,7 @@ function App() {
   const [sortBy, setSortBy] = useState("date");
   const [filterColor, setFilterColor] = useState("all");
   const [errors, setErrors] = useState({});
+  const [selectedNotes, setSelectedNotes] = useState([]);
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
@@ -94,6 +97,7 @@ function App() {
       id: Date.now(),
       createdAt: new Date().toLocaleDateString(),
       updatedAt: new Date().toLocaleDateString(),
+      pinned: false,
       archived: false
     };
     if (editingId !== null) {
@@ -142,6 +146,41 @@ function App() {
       )
     )
   }
+  function handlePin(id) {
+    setNotes(
+      notes.map((note) =>
+        note.id === id
+          ? { ...note, pinned: !note.pinned }
+          : note
+      )
+    );
+  }
+  function handleSelect(id) {
+    setSelectedNotes((previous) =>
+      previous.includes(id)
+        ? previous.filter((noteId) => noteId !== id)
+        : [...previous, id]
+    );
+  }
+  function handleBulkDelete() {
+    if (selectedNotes.length === 0) {
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete the selected notes?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    setNotes(
+      notes.filter((note) => !selectedNotes.includes(note.id))
+    );
+
+    setSelectedNotes([]);
+  }
   const visibleNotes = notes.filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
@@ -156,6 +195,9 @@ function App() {
 
     return matchesArchive && matchesSearch && matchesColor;
   }).sort((a, b) => {
+    if (a.pinned !== b.pinned) {
+      return b.pinned - a.pinned;
+    }
     if (sortBy === "title") {
       return a.title.localeCompare(b.title);
     }
@@ -207,6 +249,14 @@ function App() {
         <option value="pink">Pink</option>
         <option value="red">Red</option>
       </select>
+      {selectedNotes.length > 0 && (
+        <button
+          onClick={handleBulkDelete}
+          className="mt-4 ml-2 px-4 py-2 bg-red-600 text-white rounded"
+        >
+          Delete Selected ({selectedNotes.length})
+        </button>
+      )}
       <div className="mt-6 border rounded-lg p-4">
         <input
           placeholder="Title"
@@ -293,6 +343,9 @@ function App() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onArchive={handleArchive}
+              onPin={handlePin}
+              selected={selectedNotes.includes(note.id)}
+              onSelect={handleSelect}
             />
           ))
         )}
