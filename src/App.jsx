@@ -1,33 +1,20 @@
-import { useState, useEffect,useRef } from "react";
-import NoteCard from "./components/NoteCard";
+import { useState, useRef } from "react";
+import SearchBar from "./components/SearchBar";
+import NoteFilters from "./components/NoteFilters";
+import NoteList from "./components/Notelist";
+import NoteForm from "./components/NoteForm";
+import { validateNote } from "./utils/validation";
+import useNotes from "./hooks/useNotes";
 function App() {
-  const [notes, setNotes] = useState(() => {
-    const savedNotes = localStorage.getItem("notes");
-    return savedNotes ? JSON.parse(savedNotes) : [
-      {
-        id: 1,
-        title: "React Learning",
-        content: "Today I learned about useEffect and useState.",
-        color: "yellow",
-        pinned: false,
-        tags: ["React", "Learning"],
-        archived: false,
-        createdAt: "Sep 11, 2026",
-        updatedAt: "Sep 11, 2026"
-      },
-      {
-        id: 2,
-        title: "Shopping List",
-        content: "Milk, bread and vegetables.",
-        color: "blue",
-        pinned: false,
-        tags: ["Personal"],
-        archived: false,
-        createdAt: "Sep 11, 2026",
-        updatedAt: "Sep 11, 2026"
-      }
-    ];
-  });
+  const {
+  notes,
+  addNote,
+  updateNote,
+  deleteNote,
+  archiveNote,
+  pinNote,
+  bulkDelete
+} = useNotes();
   const [newNote, setNewnote] = useState({
     title: "",
     content: "",
@@ -43,54 +30,19 @@ function App() {
   const [errors, setErrors] = useState({});
   const [selectedNotes, setSelectedNotes] = useState([]);
   const editorRef = useRef(null);
-  useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
+
   function handleAddNote() {
-    const textContent = new DOMParser()
-  .parseFromString(newNote.content, "text/html")
-  .body.textContent
-  .trim();
-    if (textContent === "") {
-      setErrors({
-        content: "Content is required"
-      });
-      return;
-    }
-    if (newNote.title.length > 100) {
-      setErrors({
-        title: "Title cannot exceed 100 characters"
-      });
-      return;
-    }
-    const duplicate = notes.some(
-      (note) =>
-        note.id !== editingId &&
-        note.title.trim() === newNote.title.trim() &&
-        note.content.trim() === newNote.content.trim()
-    );
-    if (duplicate) {
-      setErrors({
-        duplicate: "A note with the same title and content already exists"
-      });
-      return;
-    }
-    if (textContent.length > 1000) {
-      setErrors({
-        content: "Content cannot exceed 1000 characters"
-      });
-      return;
-    }
-    if (
-      tagInput
-        .split(",")
-        .some((tag) => tag.trim().length > 30)
-    ) {
-      setErrors({
-        tags: "Each tag cannot exceed 30 characters"
-      });
-      return;
-    }
+const validationErrors = validateNote(
+  newNote,
+  notes,
+  editingId,
+  tagInput
+);
+
+if (Object.keys(validationErrors).length > 0) {
+  setErrors(validationErrors);
+  return;
+}
     const note = {
       ...newNote,
 
@@ -105,20 +57,21 @@ function App() {
       pinned: false,
       archived: false
     };
-    if (editingId !== null) {
-      setNotes(
-        notes.map((existingNote) =>
-          existingNote.id === editingId
-            ? {
-              ...note,
-              id: editingId,
-              createdAt: existingNote.createdAt
-            }
-            : existingNote
-        )
-      );
+if (editingId !== null) {
+  const existingNote = notes.find(
+    (note) => note.id === editingId
+  );
+
+  updateNote({
+    ...note,
+    id: editingId,
+    createdAt: existingNote.createdAt,
+    pinned: existingNote.pinned,
+    archived: existingNote.archived
+  });
+
     } else {
-      setNotes([...notes, note]);
+      addNote(note);
     }
     setNewnote({
       title: "",
@@ -130,44 +83,19 @@ function App() {
     setTagInput("");
     setErrors({});
     if (editorRef.current) {
-  editorRef.current.innerHTML = "";
-}
+      editorRef.current.innerHTML = "";
+    }
   }
   function handleEdit(note) {
-  setEditingId(note.id);
-  setNewnote(note);
-  setTagInput(note.tags.join(","));
+    setEditingId(note.id);
+    setNewnote(note);
+    setTagInput(note.tags.join(","));
 
-  setTimeout(() => {
-    if (editorRef.current) {
-      editorRef.current.innerHTML = note.content;
-    }
-  }, 0);
-}
-  function handleDelete(id) {
-    const confirmDelete = window.confirm("Are you sure want to delete this note?");
-    if (!confirmDelete) {
-      return;
-    }
-    setNotes(notes.filter((note) => note.id !== id));
-  }
-  function handleArchive(id) {
-    setNotes(
-      notes.map((note) =>
-        note.id === id
-          ? { ...note, archived: !note.archived }
-          : note
-      )
-    )
-  }
-  function handlePin(id) {
-    setNotes(
-      notes.map((note) =>
-        note.id === id
-          ? { ...note, pinned: !note.pinned }
-          : note
-      )
-    );
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.innerHTML = note.content;
+      }
+    }, 0);
   }
   function handleSelect(id) {
     setSelectedNotes((previous) =>
@@ -176,25 +104,34 @@ function App() {
         : [...previous, id]
     );
   }
-  function handleBulkDelete() {
-    if (selectedNotes.length === 0) {
-      return;
-    }
+  function handleDelete(id) {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this note?"
+  );
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete the selected notes?"
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    setNotes(
-      notes.filter((note) => !selectedNotes.includes(note.id))
-    );
-
-    setSelectedNotes([]);
+  if (!confirmDelete) {
+    return;
   }
+
+  deleteNote(id);
+}
+function handleBulkDelete() {
+  if (selectedNotes.length === 0) {
+    return;
+  }
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete the selected notes?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  bulkDelete(selectedNotes);
+
+  setSelectedNotes([]);
+}
   const visibleNotes = notes.filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
@@ -227,174 +164,47 @@ function App() {
       <h1 className="text-3xl font-bold">Notes</h1>
       <p className=" mt-1 text-gray-500">Your thoughts, organised</p>
       <div className="flex flex-col sm:flex-row gap-4 mt-6">
-        <input
-          className="flex-1 border rounded px-4 py-2 focus:outline-none"
-          placeholder="Search notes..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
         />
-        <button onClick={handleAddNote} className="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">
-          {editingId !== null ? "Update Note" : "Add Note"}</button>
-      </div>
-      <button
-        onClick={() => setShowArchived(!showArchived)}
-        className="mt-4 px-4 py-2 border rounded"
-      >
-        {showArchived ? "Active Notes" : "Archived Notes"}
-      </button>
-      <select
-        value={sortBy}
-        onChange={(event) => setSortBy(event.target.value)}
-        className="mt-4 border rounded px-4 py-2"
-      >
-        <option value="date">Sort by Date</option>
-        <option value="title">Sort by Title</option>
-        <option value="color">Sort by Color</option>
-      </select>
-      <select
-        value={filterColor}
-        onChange={(event) => setFilterColor(event.target.value)}
-        className="mt-4 ml-2 border rounded px-4 py-2"
-      >
-        <option value="all">All Colors</option>
-        <option value="yellow">Yellow</option>
-        <option value="blue">Blue</option>
-        <option value="green">Green</option>
-        <option value="pink">Pink</option>
-        <option value="red">Red</option>
-      </select>
-      {selectedNotes.length > 0 && (
+
         <button
-          onClick={handleBulkDelete}
-          className="mt-4 ml-2 px-4 py-2 bg-red-600 text-white rounded"
+          onClick={handleAddNote}
+          className="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700"
         >
-          Delete Selected ({selectedNotes.length})
+          {editingId !== null ? "Update Note" : "Add Note"}
         </button>
-      )}
-      <div className="mt-6 border rounded-lg p-4">
-        <input
-          placeholder="Title"
-          maxLength={100}
-          value={newNote.title}
-          onChange={(event) => {
-            setNewnote({
-              ...newNote,
-              title: event.target.value
-            });
-            setErrors({});
-          }}
-        />
-        {errors.title && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.title}
-          </p>
-        )}
-        <div
-  ref={editorRef}
-  contentEditable
-  suppressContentEditableWarning
-  className="border rounded p-3 min-h-32"
-  onInput={(event) => {
-    setNewnote({
-      ...newNote,
-      content: event.currentTarget.innerHTML
-    });
-    setErrors({});
-  }}
+      </div>
+
+      <NoteFilters
+        showArchived={showArchived}
+        setShowArchived={setShowArchived}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        filterColor={filterColor}
+        setFilterColor={setFilterColor}
+        selectedNotes={selectedNotes}
+        handleBulkDelete={handleBulkDelete}
+      />
+      <NoteForm
+  newNote={newNote}
+  setNewnote={setNewnote}
+  tagInput={tagInput}
+  setTagInput={setTagInput}
+  errors={errors}
+  setErrors={setErrors}
+  editorRef={editorRef}
 />
-        <button
-  type="button"
-  onClick={() => document.execCommand("bold")}
-  className="px-3 py-1 border rounded font-bold"
->
-  B
-</button>
-
-<button
-  type="button"
-  onClick={() => document.execCommand("italic")}
-  className="px-3 py-1 border rounded italic"
->
-  I
-</button>
-        <button
-          type="button"
-          onClick={() => document.execCommand("insertUnorderedList")}
-          className="px-3 py-1 border rounded"
-        >
-          • List
-        </button>
-
-        <button
-          type="button"
-          onClick={() => document.execCommand("insertOrderedList")}
-          className="px-3 py-1 border rounded"
-        >
-          1. List
-        </button>
-        {errors.content && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.content}
-          </p>
-        )}
-        {errors.duplicate && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.duplicate}
-          </p>
-        )}
-        {errors.tags && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.tags}
-          </p>
-        )}
-        <div className="flex gap-2 mt-4">
-          {["yellow", "blue", "green", "pink", "red"].map((color) => (
-            <button key={color}
-              type="button"
-              onClick={() => setNewnote({
-                ...newNote,
-                color: color
-              })}
-              className={`w-8 h-8 rounded-full ${{
-                yellow: "bg-yellow-100",
-                blue: "bg-blue-100",
-                green: "bg-green-100",
-                pink: "bg-pink-100",
-                red: "bg-red-100"
-              }[color]}`}>
-            </button>
-          ))}
-        </div>
-        <input
-          className="mt-4 w-full border rounded px-4 py-2"
-          placeholder="Tags"
-          value={tagInput}
-          onChange={(event) => {
-            setTagInput(event.target.value);
-          }}
-        >
-        </input>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        {visibleNotes.length === 0 ? (
-          <p className="text-gray-500">
-            No notes found.
-          </p>
-        ) : (
-          visibleNotes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onArchive={handleArchive}
-              onPin={handlePin}
-              selected={selectedNotes.includes(note.id)}
-              onSelect={handleSelect}
-            />
-          ))
-        )}
-      </div>
+      <NoteList
+  visibleNotes={visibleNotes}
+  handleEdit={handleEdit}
+  handleDelete={handleDelete}
+  handleArchive={archiveNote}
+  handlePin={pinNote}
+  selectedNotes={selectedNotes}
+  handleSelect={handleSelect}
+/>
     </div>
   );
 }
