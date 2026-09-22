@@ -15,9 +15,10 @@ function NoteCard({ note, onEdit, onDelete, onArchive, onPin, selected, onSelect
       />
       <h2 className="text-xl font-semibold">{note.title}</h2>
 
-      <p className="mt-2 text-gray-700">
-        {note.content}
-      </p>
+      <div
+  className="mt-2 text-gray-700"
+  dangerouslySetInnerHTML={{ __html: note.content }}
+/>
       <div className="mt-3 flex gap-2">
         {note.tags.map((tag) => (
           <span

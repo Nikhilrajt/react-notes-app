@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import NoteCard from "./components/NoteCard";
 function App() {
   const [notes, setNotes] = useState(() => {
@@ -42,11 +42,16 @@ function App() {
   const [filterColor, setFilterColor] = useState("all");
   const [errors, setErrors] = useState({});
   const [selectedNotes, setSelectedNotes] = useState([]);
+  const editorRef = useRef(null);
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
   function handleAddNote() {
-    if (newNote.content.trim() === "") {
+    const textContent = new DOMParser()
+  .parseFromString(newNote.content, "text/html")
+  .body.textContent
+  .trim();
+    if (textContent === "") {
       setErrors({
         content: "Content is required"
       });
@@ -70,7 +75,7 @@ function App() {
       });
       return;
     }
-    if (newNote.content.length > 1000) {
+    if (textContent.length > 1000) {
       setErrors({
         content: "Content cannot exceed 1000 characters"
       });
@@ -124,12 +129,21 @@ function App() {
     setEditingId(null);
     setTagInput("");
     setErrors({});
+    if (editorRef.current) {
+  editorRef.current.innerHTML = "";
+}
   }
   function handleEdit(note) {
-    setEditingId(note.id);
-    setNewnote(note);
-    setTagInput(note.tags.join(","));
-  }
+  setEditingId(note.id);
+  setNewnote(note);
+  setTagInput(note.tags.join(","));
+
+  setTimeout(() => {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = note.content;
+    }
+  }, 0);
+}
   function handleDelete(id) {
     const confirmDelete = window.confirm("Are you sure want to delete this note?");
     if (!confirmDelete) {
@@ -275,18 +289,49 @@ function App() {
             {errors.title}
           </p>
         )}
-        <textarea
-          placeholder="Content"
-          maxLength={1000}
-          value={newNote.content}
-          onChange={(event) => {
-            setNewnote({
-              ...newNote,
-              content: event.target.value
-            });
-            setErrors({});
-          }}
-        />
+        <div
+  ref={editorRef}
+  contentEditable
+  suppressContentEditableWarning
+  className="border rounded p-3 min-h-32"
+  onInput={(event) => {
+    setNewnote({
+      ...newNote,
+      content: event.currentTarget.innerHTML
+    });
+    setErrors({});
+  }}
+/>
+        <button
+  type="button"
+  onClick={() => document.execCommand("bold")}
+  className="px-3 py-1 border rounded font-bold"
+>
+  B
+</button>
+
+<button
+  type="button"
+  onClick={() => document.execCommand("italic")}
+  className="px-3 py-1 border rounded italic"
+>
+  I
+</button>
+        <button
+          type="button"
+          onClick={() => document.execCommand("insertUnorderedList")}
+          className="px-3 py-1 border rounded"
+        >
+          • List
+        </button>
+
+        <button
+          type="button"
+          onClick={() => document.execCommand("insertOrderedList")}
+          className="px-3 py-1 border rounded"
+        >
+          1. List
+        </button>
         {errors.content && (
           <p className="text-red-500 text-sm mt-1">
             {errors.content}
