@@ -81,8 +81,8 @@ function App() {
         .filter((tag) => tag !== ""),
 
       id: Date.now(),
-      createdAt: new Date().toLocaleDateString(),
-      updatedAt: new Date().toLocaleDateString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       pinned: false,
       archived: false
     };

@@ -9,9 +9,9 @@ function NoteForm({
   editorRef
 }) {
   return (
-    <div className="mt-6">
+    <div className="mt-6 p-5 border rounded-xl shadow-sm bg-white">
       <input
-        className="w-full border rounded px-4 py-2 mb-3"
+        className="w-full border rounded-lg px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
         placeholder="Title (optional)"
         value={newNote.title}
         onChange={(event) => {
@@ -64,19 +64,19 @@ function NoteForm({
               })
             }
             className={`w-8 h-8 rounded-full ${{
-                yellow: "bg-yellow-100",
-                blue: "bg-blue-100",
-                green: "bg-green-100",
-                pink: "bg-pink-100",
-                red: "bg-red-100"
-              }[color]
+              yellow: "bg-yellow-100",
+              blue: "bg-blue-100",
+              green: "bg-green-100",
+              pink: "bg-pink-100",
+              red: "bg-red-100"
+            }[color]
               }`}
           ></button>
         ))}
       </div>
 
       <input
-        className="mt-4 w-full border rounded px-4 py-2"
+        className="mt-4 w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         placeholder="Tags"
         value={tagInput}
         onChange={(event) => {
