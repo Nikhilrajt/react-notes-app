@@ -5,30 +5,7 @@ function useNotes() {
   const [notes, setNotes] = useState(() => {
     const savedNotes = localStorage.getItem("notes");
 
-    return savedNotes ? JSON.parse(savedNotes) : [
-      {
-        id: 1,
-        title: "React Learning",
-        content: "Today I learned about useEffect and useState.",
-        color: "yellow",
-        pinned: false,
-        tags: ["React", "Learning"],
-        archived: false,
-        createdAt: "Sep 11, 2026",
-        updatedAt: "Sep 11, 2026"
-      },
-      {
-        id: 2,
-        title: "Shopping List",
-        content: "Milk, bread and vegetables.",
-        color: "blue",
-        pinned: false,
-        tags: ["Personal"],
-        archived: false,
-        createdAt: "Sep 11, 2026",
-        updatedAt: "Sep 11, 2026"
-      }
-    ];
+    return savedNotes ? JSON.parse(savedNotes) : [];
   });
 
   useEffect(() => {
