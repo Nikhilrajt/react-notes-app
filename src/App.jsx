@@ -5,19 +5,21 @@ import NoteList from "./components/Notelist";
 import NoteForm from "./components/NoteForm";
 import { validateNote } from "./utils/validation";
 import { useNotesContext } from "./context/NotesContext";
+import Toast from "./components/Toast";
+
 function App() {
-const {
-  notes,
-  loading,
-  error,
-  createNote,
-  updateNote,
-  deleteNote,
-  toggleArchive,
-  pinNote,
-  bulkDelete,
-  searchNotes
-} = useNotesContext();
+  const {
+    notes,
+    loading,
+    error,
+    createNote,
+    updateNote,
+    deleteNote,
+    toggleArchive,
+    pinNote,
+    bulkDelete,
+    searchNotes
+  } = useNotesContext();
   const [newNote, setNewnote] = useState({
     title: "",
     content: "",
@@ -32,7 +34,19 @@ const {
   const [filterColor, setFilterColor] = useState("all");
   const [errors, setErrors] = useState({});
   const [selectedNotes, setSelectedNotes] = useState([]);
+  const [toast, setToast] = useState("");
   const editorRef = useRef(null);
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setToast("");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.ctrlKey && event.key === "Enter") {
@@ -89,35 +103,37 @@ const {
       archived: false
     };
     if (editingId !== null) {
-  const existingNote = notes.find(
-    (note) => note.id === editingId
-  );
+      const existingNote = notes.find(
+        (note) => note.id === editingId
+      );
 
-  await updateNote(editingId, {
-    ...newNote,
-    id: editingId,
-    tags: tagInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== ""),
-    createdAt: existingNote.createdAt,
-    updatedAt: new Date().toISOString(),
-    pinned: existingNote.pinned,
-    archived: existingNote.archived
-  });
-} else {
-  await createNote({
-    ...newNote,
-    tags: tagInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== ""),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    pinned: false,
-    archived: false
-  });
-}
+      await updateNote(editingId, {
+        ...newNote,
+        id: editingId,
+        tags: tagInput
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== ""),
+        createdAt: existingNote.createdAt,
+        updatedAt: new Date().toISOString(),
+        pinned: existingNote.pinned,
+        archived: existingNote.archived
+      });
+      setToast("Note updated successfully");
+    } else {
+      await createNote({
+        ...newNote,
+        tags: tagInput
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== ""),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        pinned: false,
+        archived: false
+      });
+      setToast("Note created successfully");
+    }
     setNewnote({
       title: "",
       content: "",
@@ -150,38 +166,42 @@ const {
     );
   }
   async function handleDelete(id) {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this note?"
-  );
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this note?"
+    );
 
-  if (!confirmDelete) {
-    return;
+    if (!confirmDelete) {
+      return;
+    }
+
+    await deleteNote(id);
+    setToast("Note deleted successfully");
   }
-
-  await deleteNote(id);
-}
-async function handleArchive(id) {
-  await toggleArchive(id);
-}
-async function handlePin(id) {
-  await pinNote(id);
-}
+  async function handleArchive(id) {
+    await toggleArchive(id);
+    setToast("Note archive status updated");
+  }
+  async function handlePin(id) {
+    await pinNote(id);
+    setToast("Note pin status updated");
+  }
   async function handleBulkDelete() {
-  if (selectedNotes.length === 0) {
-    return;
+    if (selectedNotes.length === 0) {
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete the selected notes?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    await bulkDelete(selectedNotes);
+    setSelectedNotes([]);
+    setToast("Selected notes deleted successfully");
   }
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete the selected notes?"
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  await bulkDelete(selectedNotes);
-  setSelectedNotes([]);
-}
   const visibleNotes = notes.filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
@@ -215,8 +235,14 @@ async function handlePin(id) {
   });
   return (
     <div className="min-h-screen p-6">
+      <Toast message={toast} />
       <h1 className="text-3xl font-bold">Notes</h1>
       <p className=" mt-1 text-gray-500">Your thoughts, organised</p>
+      {error && (
+        <p className="mt-4 text-red-500">
+          {error}
+        </p>
+      )}
       <div className="flex flex-col sm:flex-row gap-4 mt-6">
         <SearchBar
           searchTerm={searchTerm}
@@ -251,9 +277,9 @@ async function handlePin(id) {
         editorRef={editorRef}
       />
       {loading ? (
-        <p className="mt-6 text-gray-500">
-          Loading notes...
-        </p>
+        <div className="mt-6 flex justify-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+        </div>
       ) : (
         <NoteList
           visibleNotes={visibleNotes}

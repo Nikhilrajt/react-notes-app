@@ -7,7 +7,7 @@ import { NotesProvider } from './context/NotesContext.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <NotesProvider>
-    <App />
+      <App />
     </NotesProvider>
   </StrictMode>,
 )
