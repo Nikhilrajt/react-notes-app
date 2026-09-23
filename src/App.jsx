@@ -4,18 +4,20 @@ import NoteFilters from "./components/NoteFilters";
 import NoteList from "./components/Notelist";
 import NoteForm from "./components/NoteForm";
 import { validateNote } from "./utils/validation";
-import useNotes from "./hooks/useNotes";
+import { useNotesContext } from "./context/NotesContext";
 function App() {
-  const {
-    notes,
-    loading,
-    addNote,
-    updateNote,
-    deleteNote,
-    archiveNote,
-    pinNote,
-    bulkDelete
-  } = useNotes();
+const {
+  notes,
+  loading,
+  error,
+  createNote,
+  updateNote,
+  deleteNote,
+  toggleArchive,
+  pinNote,
+  bulkDelete,
+  searchNotes
+} = useNotesContext();
   const [newNote, setNewnote] = useState({
     title: "",
     content: "",
@@ -60,7 +62,7 @@ function App() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [editingId, newNote, notes, tagInput]);
-  function handleAddNote() {
+  async function handleAddNote() {
     const validationErrors = validateNote(
       newNote,
       notes,
@@ -87,21 +89,35 @@ function App() {
       archived: false
     };
     if (editingId !== null) {
-      const existingNote = notes.find(
-        (note) => note.id === editingId
-      );
+  const existingNote = notes.find(
+    (note) => note.id === editingId
+  );
 
-      updateNote({
-        ...note,
-        id: editingId,
-        createdAt: existingNote.createdAt,
-        pinned: existingNote.pinned,
-        archived: existingNote.archived
-      });
-
-    } else {
-      addNote(note);
-    }
+  await updateNote(editingId, {
+    ...newNote,
+    id: editingId,
+    tags: tagInput
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== ""),
+    createdAt: existingNote.createdAt,
+    updatedAt: new Date().toISOString(),
+    pinned: existingNote.pinned,
+    archived: existingNote.archived
+  });
+} else {
+  await createNote({
+    ...newNote,
+    tags: tagInput
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== ""),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    pinned: false,
+    archived: false
+  });
+}
     setNewnote({
       title: "",
       content: "",
@@ -133,34 +149,39 @@ function App() {
         : [...previous, id]
     );
   }
-  function handleDelete(id) {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this note?"
-    );
+  async function handleDelete(id) {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this note?"
+  );
 
-    if (!confirmDelete) {
-      return;
-    }
-
-    deleteNote(id);
+  if (!confirmDelete) {
+    return;
   }
-  function handleBulkDelete() {
-    if (selectedNotes.length === 0) {
-      return;
-    }
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete the selected notes?"
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    bulkDelete(selectedNotes);
-
-    setSelectedNotes([]);
+  await deleteNote(id);
+}
+async function handleArchive(id) {
+  await toggleArchive(id);
+}
+async function handlePin(id) {
+  await pinNote(id);
+}
+  async function handleBulkDelete() {
+  if (selectedNotes.length === 0) {
+    return;
   }
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete the selected notes?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  await bulkDelete(selectedNotes);
+  setSelectedNotes([]);
+}
   const visibleNotes = notes.filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
@@ -238,8 +259,8 @@ function App() {
           visibleNotes={visibleNotes}
           handleEdit={handleEdit}
           handleDelete={handleDelete}
-          handleArchive={archiveNote}
-          handlePin={pinNote}
+          handleArchive={handleArchive}
+          handlePin={handlePin}
           selectedNotes={selectedNotes}
           handleSelect={handleSelect}
         />
