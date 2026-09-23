@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SearchBar from "./components/SearchBar";
 import NoteFilters from "./components/NoteFilters";
 import NoteList from "./components/Notelist";
@@ -7,14 +7,15 @@ import { validateNote } from "./utils/validation";
 import useNotes from "./hooks/useNotes";
 function App() {
   const {
-  notes,
-  addNote,
-  updateNote,
-  deleteNote,
-  archiveNote,
-  pinNote,
-  bulkDelete
-} = useNotes();
+    notes,
+    loading,
+    addNote,
+    updateNote,
+    deleteNote,
+    archiveNote,
+    pinNote,
+    bulkDelete
+  } = useNotes();
   const [newNote, setNewnote] = useState({
     title: "",
     content: "",
@@ -30,19 +31,47 @@ function App() {
   const [errors, setErrors] = useState({});
   const [selectedNotes, setSelectedNotes] = useState([]);
   const editorRef = useRef(null);
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.ctrlKey && event.key === "Enter") {
+        handleAddNote();
+      }
 
+      if (event.key === "Escape" && editingId !== null) {
+        setEditingId(null);
+        setNewnote({
+          title: "",
+          content: "",
+          color: "yellow",
+          tags: []
+        });
+        setTagInput("");
+        setErrors({});
+
+        if (editorRef.current) {
+          editorRef.current.innerHTML = "";
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [editingId, newNote, notes, tagInput]);
   function handleAddNote() {
-const validationErrors = validateNote(
-  newNote,
-  notes,
-  editingId,
-  tagInput
-);
+    const validationErrors = validateNote(
+      newNote,
+      notes,
+      editingId,
+      tagInput
+    );
 
-if (Object.keys(validationErrors).length > 0) {
-  setErrors(validationErrors);
-  return;
-}
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     const note = {
       ...newNote,
 
@@ -57,18 +86,18 @@ if (Object.keys(validationErrors).length > 0) {
       pinned: false,
       archived: false
     };
-if (editingId !== null) {
-  const existingNote = notes.find(
-    (note) => note.id === editingId
-  );
+    if (editingId !== null) {
+      const existingNote = notes.find(
+        (note) => note.id === editingId
+      );
 
-  updateNote({
-    ...note,
-    id: editingId,
-    createdAt: existingNote.createdAt,
-    pinned: existingNote.pinned,
-    archived: existingNote.archived
-  });
+      updateNote({
+        ...note,
+        id: editingId,
+        createdAt: existingNote.createdAt,
+        pinned: existingNote.pinned,
+        archived: existingNote.archived
+      });
 
     } else {
       addNote(note);
@@ -105,42 +134,46 @@ if (editingId !== null) {
     );
   }
   function handleDelete(id) {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this note?"
-  );
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this note?"
+    );
 
-  if (!confirmDelete) {
-    return;
+    if (!confirmDelete) {
+      return;
+    }
+
+    deleteNote(id);
   }
+  function handleBulkDelete() {
+    if (selectedNotes.length === 0) {
+      return;
+    }
 
-  deleteNote(id);
-}
-function handleBulkDelete() {
-  if (selectedNotes.length === 0) {
-    return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete the selected notes?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    bulkDelete(selectedNotes);
+
+    setSelectedNotes([]);
   }
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete the selected notes?"
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  bulkDelete(selectedNotes);
-
-  setSelectedNotes([]);
-}
   const visibleNotes = notes.filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
       : !note.archived;
+    const contentText = new DOMParser()
+      .parseFromString(note.content, "text/html")
+      .body.textContent
+      .toLowerCase();
     const matchesColor =
       filterColor === "all" || note.color === filterColor;
     const matchesSearch =
       note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contentText.includes(searchTerm.toLowerCase()) ||
       note.tags.some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -188,23 +221,29 @@ function handleBulkDelete() {
         handleBulkDelete={handleBulkDelete}
       />
       <NoteForm
-  newNote={newNote}
-  setNewnote={setNewnote}
-  tagInput={tagInput}
-  setTagInput={setTagInput}
-  errors={errors}
-  setErrors={setErrors}
-  editorRef={editorRef}
-/>
-      <NoteList
-  visibleNotes={visibleNotes}
-  handleEdit={handleEdit}
-  handleDelete={handleDelete}
-  handleArchive={archiveNote}
-  handlePin={pinNote}
-  selectedNotes={selectedNotes}
-  handleSelect={handleSelect}
-/>
+        newNote={newNote}
+        setNewnote={setNewnote}
+        tagInput={tagInput}
+        setTagInput={setTagInput}
+        errors={errors}
+        setErrors={setErrors}
+        editorRef={editorRef}
+      />
+      {loading ? (
+        <p className="mt-6 text-gray-500">
+          Loading notes...
+        </p>
+      ) : (
+        <NoteList
+          visibleNotes={visibleNotes}
+          handleEdit={handleEdit}
+          handleDelete={handleDelete}
+          handleArchive={archiveNote}
+          handlePin={pinNote}
+          selectedNotes={selectedNotes}
+          handleSelect={handleSelect}
+        />
+      )}
     </div>
   );
 }

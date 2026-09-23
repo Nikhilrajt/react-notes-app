@@ -10,30 +10,30 @@ function NoteForm({
 }) {
   return (
     <div className="mt-6">
-        <input
-  className="w-full border rounded px-4 py-2 mb-3"
-  placeholder="Title (optional)"
-  value={newNote.title}
-  onChange={(event) => {
-    setNewnote({
-      ...newNote,
-      title: event.target.value
-    });
-    setErrors({});
-  }}
-/>
+      <input
+        className="w-full border rounded px-4 py-2 mb-3"
+        placeholder="Title (optional)"
+        value={newNote.title}
+        onChange={(event) => {
+          setNewnote({
+            ...newNote,
+            title: event.target.value
+          });
+          setErrors({});
+        }}
+      />
 
-{errors.title && (
-  <p className="text-red-500 text-sm mb-2">
-    {errors.title}
-  </p>
-)}
-        <RichTextEditor
-  newNote={newNote}
-  setNewnote={setNewnote}
-  setErrors={setErrors}
-  editorRef={editorRef}
-/>
+      {errors.title && (
+        <p className="text-red-500 text-sm mb-2">
+          {errors.title}
+        </p>
+      )}
+      <RichTextEditor
+        newNote={newNote}
+        setNewnote={setNewnote}
+        setErrors={setErrors}
+        editorRef={editorRef}
+      />
       {errors.content && (
         <p className="text-red-500 text-sm mt-1">
           {errors.content}
@@ -63,15 +63,14 @@ function NoteForm({
                 color: color
               })
             }
-            className={`w-8 h-8 rounded-full ${
-              {
+            className={`w-8 h-8 rounded-full ${{
                 yellow: "bg-yellow-100",
                 blue: "bg-blue-100",
                 green: "bg-green-100",
                 pink: "bg-pink-100",
                 red: "bg-red-100"
               }[color]
-            }`}
+              }`}
           ></button>
         ))}
       </div>

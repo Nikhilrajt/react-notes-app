@@ -16,12 +16,23 @@ export function validateNote(newNote, notes, editingId, tagInput) {
     };
   }
 
-  const duplicate = notes.some(
-    (note) =>
+  const newTextContent = new DOMParser()
+    .parseFromString(newNote.content, "text/html")
+    .body.textContent
+    .trim();
+
+  const duplicate = notes.some((note) => {
+    const existingTextContent = new DOMParser()
+      .parseFromString(note.content, "text/html")
+      .body.textContent
+      .trim();
+
+    return (
       note.id !== editingId &&
       note.title.trim() === newNote.title.trim() &&
-      note.content.trim() === newNote.content.trim()
-  );
+      existingTextContent === newTextContent
+    );
+  });
 
   if (duplicate) {
     return {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 function useNotes() {
+  const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState(() => {
     const savedNotes = localStorage.getItem("notes");
 
@@ -32,6 +33,7 @@ function useNotes() {
 
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
+    setLoading(false);
   }, [notes]);
 
   function addNote(note) {
@@ -84,6 +86,7 @@ function useNotes() {
 
   return {
     notes,
+    loading,
     addNote,
     updateNote,
     deleteNote,
