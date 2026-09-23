@@ -88,20 +88,6 @@ function App() {
       setErrors(validationErrors);
       return;
     }
-    const note = {
-      ...newNote,
-
-      tags: tagInput
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag !== ""),
-
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      pinned: false,
-      archived: false
-    };
     if (editingId !== null) {
       const existingNote = notes.find(
         (note) => note.id === editingId
@@ -114,6 +100,7 @@ function App() {
           .split(",")
           .map((tag) => tag.trim())
           .filter((tag) => tag !== ""),
+        stock: existingNote.stock,
         createdAt: existingNote.createdAt,
         updatedAt: new Date().toISOString(),
         pinned: existingNote.pinned,
@@ -127,6 +114,7 @@ function App() {
           .split(",")
           .map((tag) => tag.trim())
           .filter((tag) => tag !== ""),
+        stock: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         pinned: false,
@@ -202,23 +190,14 @@ function App() {
     setSelectedNotes([]);
     setToast("Selected notes deleted successfully");
   }
-  const visibleNotes = notes.filter((note) => {
+  const visibleNotes = searchNotes(searchTerm).filter((note) => {
     const matchesArchive = showArchived
       ? note.archived
       : !note.archived;
-    const contentText = new DOMParser()
-      .parseFromString(note.content, "text/html")
-      .body.textContent
-      .toLowerCase();
     const matchesColor =
       filterColor === "all" || note.color === filterColor;
-    const matchesSearch =
-      note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contentText.includes(searchTerm.toLowerCase()) ||
-      note.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    return matchesArchive && matchesSearch && matchesColor;
+    return matchesArchive && matchesColor;
   }).sort((a, b) => {
     if (a.pinned !== b.pinned) {
       return b.pinned - a.pinned;

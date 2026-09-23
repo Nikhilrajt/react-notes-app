@@ -52,7 +52,7 @@ function NoteForm({
         </p>
       )}
 
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-3 mt-4">
         {["yellow", "blue", "green", "pink", "red"].map((color) => (
           <button
             key={color}
@@ -63,15 +63,24 @@ function NoteForm({
                 color: color
               })
             }
-            className={`w-8 h-8 rounded-full ${{
-              yellow: "bg-yellow-100",
-              blue: "bg-blue-100",
-              green: "bg-green-100",
-              pink: "bg-pink-100",
-              red: "bg-red-100"
-            }[color]
+            className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${{
+                yellow: "bg-yellow-100",
+                blue: "bg-blue-100",
+                green: "bg-green-100",
+                pink: "bg-pink-100",
+                red: "bg-red-100"
+              }[color]
+              } ${newNote.color === color
+                ? "border-gray-500 scale-110"
+                : "border-transparent"
               }`}
-          ></button>
+          >
+            {newNote.color === color && (
+              <span className="text-gray-700 text-sm font-bold">
+                ✓
+              </span>
+            )}
+          </button>
         ))}
       </div>
 

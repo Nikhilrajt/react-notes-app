@@ -1,4 +1,63 @@
 {
-    "notes": [],
-    "$schema": "./node_modules/json-server/schema.json"
+  "notes": [
+    {
+      "title": "Redux",
+      "content": "Started journey",
+      "color": "pink",
+      "tags": [
+        "Redux",
+        "react",
+        "js"
+      ],
+      "stock": 0,
+      "createdAt": "2026-09-23T10:02:29.029Z",
+      "updatedAt": "2026-09-23T10:42:29.009Z",
+      "pinned": false,
+      "archived": false,
+      "id": "0P3EcIe3-98"
+    },
+    {
+      "title": "React",
+      "content": "js",
+      "color": "yellow",
+      "tags": [
+        "Text"
+      ],
+      "stock": 0,
+      "createdAt": "2026-09-23T10:18:39.498Z",
+      "updatedAt": "2026-09-23T10:19:03.761Z",
+      "pinned": false,
+      "archived": false,
+      "id": "ti5reuzrz5A"
+    },
+    {
+      "title": "Tanstack",
+      "content": "Query",
+      "color": "yellow",
+      "tags": [
+        "Code"
+      ],
+      "stock": 0,
+      "createdAt": "2026-09-23T10:46:21.881Z",
+      "updatedAt": "2026-09-23T10:46:21.881Z",
+      "pinned": false,
+      "archived": false,
+      "id": "VL8h5BmUOnU"
+    },
+    {
+      "title": "nikhil",
+      "content": "hiii",
+      "color": "pink",
+      "tags": [
+        "welcome"
+      ],
+      "stock": 0,
+      "createdAt": "2026-09-23T11:03:15.701Z",
+      "updatedAt": "2026-09-23T11:03:15.701Z",
+      "pinned": false,
+      "archived": false,
+      "id": "utwb4Bo3GNg"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
