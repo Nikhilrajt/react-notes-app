@@ -11,52 +11,25 @@
       ],
       "stock": 0,
       "createdAt": "2026-09-23T10:02:29.029Z",
-      "updatedAt": "2026-09-23T10:42:29.009Z",
+      "updatedAt": "2026-09-23T14:30:43.032Z",
       "pinned": false,
       "archived": false,
       "id": "0P3EcIe3-98"
     },
     {
       "title": "React",
-      "content": "js",
-      "color": "yellow",
+      "content": "Completed React&nbsp;",
+      "color": "blue",
       "tags": [
-        "Text"
+        "React",
+        "js"
       ],
       "stock": 0,
-      "createdAt": "2026-09-23T10:18:39.498Z",
-      "updatedAt": "2026-09-23T10:19:03.761Z",
+      "createdAt": "2026-10-09T06:53:38.756Z",
+      "updatedAt": "2026-10-09T06:53:38.756Z",
       "pinned": false,
       "archived": false,
-      "id": "ti5reuzrz5A"
-    },
-    {
-      "title": "Tanstack",
-      "content": "Query",
-      "color": "yellow",
-      "tags": [
-        "Code"
-      ],
-      "stock": 0,
-      "createdAt": "2026-09-23T10:46:21.881Z",
-      "updatedAt": "2026-09-23T10:46:21.881Z",
-      "pinned": false,
-      "archived": false,
-      "id": "VL8h5BmUOnU"
-    },
-    {
-      "title": "nikhil",
-      "content": "hiii",
-      "color": "pink",
-      "tags": [
-        "welcome"
-      ],
-      "stock": 0,
-      "createdAt": "2026-09-23T11:03:15.701Z",
-      "updatedAt": "2026-09-23T11:03:15.701Z",
-      "pinned": false,
-      "archived": false,
-      "id": "utwb4Bo3GNg"
+      "id": "bAFfSh4pN8k"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
