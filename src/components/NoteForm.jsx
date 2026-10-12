@@ -6,7 +6,8 @@ function NoteForm({
   setTagInput,
   errors,
   setErrors,
-  editorRef
+  editorRef,
+  onCancel
 }) {
   return (
     <div className="mt-6 p-5 border rounded-xl shadow-sm bg-white">
@@ -64,12 +65,12 @@ function NoteForm({
               })
             }
             className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${{
-                yellow: "bg-yellow-100",
-                blue: "bg-blue-100",
-                green: "bg-green-100",
-                pink: "bg-pink-100",
-                red: "bg-red-100"
-              }[color]
+              yellow: "bg-yellow-100",
+              blue: "bg-blue-100",
+              green: "bg-green-100",
+              pink: "bg-pink-100",
+              red: "bg-red-100"
+            }[color]
               } ${newNote.color === color
                 ? "border-gray-500 scale-110"
                 : "border-transparent"
@@ -92,6 +93,15 @@ function NoteForm({
           setTagInput(event.target.value);
         }}
       />
+      <div className="flex justify-end gap-3 mt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,7 @@ function App() {
   const [errors, setErrors] = useState({});
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [toast, setToast] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const editorRef = useRef(null);
   useEffect(() => {
     if (!toast) {
@@ -137,6 +138,7 @@ function App() {
   }
   function handleEdit(note) {
     setEditingId(note.id);
+    setShowForm(true);
     setNewnote(note);
     setTagInput(note.tags.join(","));
 
@@ -213,23 +215,37 @@ function App() {
     return new Date(b.updatedAt) - new Date(a.updatedAt);
   });
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <Toast message={toast} />
-      <h1 className="text-3xl font-bold">Notes</h1>
-      <p className=" mt-1 text-gray-500">Your thoughts, organised</p>
+
+<div>
+  <h1 className="text-3xl font-bold">Notes</h1>
+
+<p className="mt-1 text-gray-500 text-sm">
+  Your thoughts, organised
+</p>
+</div>
+
       {error && (
         <p className="mt-4 text-red-500">
           {error}
         </p>
       )}
-      <div className="flex flex-col sm:flex-row gap-4 mt-6">
+
+      <div className="flex flex-col sm:flex-row gap-4 mt-8">
         <SearchBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
         />
 
         <button
-          onClick={handleAddNote}
+          onClick={() => {
+            if (editingId !== null) {
+              handleAddNote();
+            } else {
+              setShowForm(true);
+            }
+          }}
           className="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700"
         >
           {editingId !== null ? "Update Note" : "Add Note"}
@@ -246,15 +262,20 @@ function App() {
         selectedNotes={selectedNotes}
         handleBulkDelete={handleBulkDelete}
       />
-      <NoteForm
-        newNote={newNote}
-        setNewnote={setNewnote}
-        tagInput={tagInput}
-        setTagInput={setTagInput}
-        errors={errors}
-        setErrors={setErrors}
-        editorRef={editorRef}
-      />
+
+      {showForm && (
+        <NoteForm
+          newNote={newNote}
+          setNewnote={setNewnote}
+          tagInput={tagInput}
+          setTagInput={setTagInput}
+          errors={errors}
+          setErrors={setErrors}
+          editorRef={editorRef}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
       {loading ? (
         <div className="mt-6 flex justify-center">
           <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>

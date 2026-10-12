@@ -26,7 +26,7 @@ function RichTextEditor({ newNote, setNewnote, setErrors, editorRef }) {
         }}
       ></div>
 
-      <div className="flex gap-2 mt-2">
+      <div className="flex gap-2 mt-2 p-2 bg-gray-50 rounded-lg">
         <button
           type="button"
           onMouseDown={(event) => {

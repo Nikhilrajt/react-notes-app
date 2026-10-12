@@ -8,7 +8,7 @@ function NoteCard({ note, onEdit, onDelete, onArchive, onPin, selected, onSelect
   };
   return (
     <div
-      className={`${colorClasses[note.color]} p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow`}
+      className={`${colorClasses[note.color]} p-5 min-h-[320px] rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col`}
     >
       <div className="flex items-center gap-2">
         <input
@@ -23,7 +23,7 @@ function NoteCard({ note, onEdit, onDelete, onArchive, onPin, selected, onSelect
       </div>
 
       <div
-        className="mt-3 text-gray-700 break-words [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+        className="mt-4 text-gray-800 leading-relaxed break-words [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
         dangerouslySetInnerHTML={{ __html: note.content }}
       />
       <div className="mt-3 flex flex-wrap gap-2">
@@ -43,7 +43,7 @@ function NoteCard({ note, onEdit, onDelete, onArchive, onPin, selected, onSelect
       <p className="mt-3 text-xs text-gray-500">
         Updated: {new Date(note.updatedAt).toLocaleDateString()}
       </p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-auto pt-4 border-t border-black/10 flex flex-wrap gap-2">
         <button
           onClick={() => onEdit(note)}
           className="px-3 py-1 border border-gray-400 rounded hover:bg-gray-100 transition-colors"
